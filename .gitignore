@@ -1,0 +1,41 @@
+# Data and models (downloaded at runtime)
+data/
+models/
+
+# Jupyter Book build output
+_build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model artifacts
+*.onnx
+*.pt
+*.pth
+
+# Environment
+.env
+.venv/
+env/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# BMAD workflow files
+_bmad/
+_bmad-output/

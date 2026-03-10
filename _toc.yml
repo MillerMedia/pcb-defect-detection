@@ -1,0 +1,12 @@
+format: jb-book
+root: intro
+
+chapters:
+  - file: notebooks/01-data-loading-and-eda
+  - file: notebooks/02-preprocessing-and-augmentation
+  - file: notebooks/03-yolov8-training-and-evaluation
+  - file: notebooks/04-resnet-classification
+  - file: notebooks/05-template-matching-baseline
+  - file: notebooks/06-model-comparison-and-analysis
+  - file: notebooks/07-onnx-optimization
+  - file: notebooks/08-flask-inference-demo

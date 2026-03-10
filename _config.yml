@@ -1,0 +1,17 @@
+title: PCB Defect Detection Pipeline
+author: Matt Miller
+logo: ""
+
+execute:
+  execute_notebooks: "off"
+
+repository:
+  url: ""
+
+html:
+  use_issues_button: false
+  use_repository_button: false
+
+sphinx:
+  extra_extensions:
+    - sphinx.ext.mathjax
