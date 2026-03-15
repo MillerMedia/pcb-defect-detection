@@ -375,77 +375,92 @@
 <p>Side-by-side comparison of all approaches on the test set.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load metrics programmatically from upstream notebooks&#39; saved results</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load metrics from upstream notebooks</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
 <span class="n">YOLO_DIR</span> <span class="o">=</span> <span class="n">PROJECT_ROOT</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;pcb-yolo&quot;</span>
 <span class="n">DATASET_YAML</span> <span class="o">=</span> <span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;dataset.yaml&quot;</span>
 
-<span class="c1"># --- YOLOv8 metrics (from Notebook 03) ---</span>
-<span class="n">yolo_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+<span class="c1"># --- YOLOv8 metrics (run validation) ---</span>
 <span class="n">yolo_path</span> <span class="o">=</span> <span class="n">MODELS_DIR</span> <span class="o">/</span> <span class="s2">&quot;yolov8_best.pt&quot;</span>
+<span class="n">yolo_metrics</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">if</span> <span class="n">yolo_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">ultralytics</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLO</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
     <span class="n">yolo_model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">yolo_path</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluating YOLOv8 on test set...&quot;</span><span class="p">)</span>
     <span class="n">yolo_val</span> <span class="o">=</span> <span class="n">yolo_model</span><span class="o">.</span><span class="n">val</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">DATASET_YAML</span><span class="p">),</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">map50</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">map</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">mp</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Recall&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">mr</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
     <span class="n">p</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">mp</span><span class="p">,</span> <span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">mr</span>
-    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;F1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">r</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">r</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="c1"># Benchmark inference time</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">yolo_metrics</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">map50</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_val</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">map</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+        <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">r</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">r</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">r</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="c1"># Benchmark inference</span>
     <span class="n">test_imgs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">))[:</span><span class="mi">10</span><span class="p">]</span>
-    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">img_p</span> <span class="ow">in</span> <span class="n">test_imgs</span><span class="p">:</span>
         <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">yolo_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">img_p</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
-    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">times</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  YOLOv8: mAP@0.5=</span><span class="si">{</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s1">&#39;mAP@0.5&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, F1=</span><span class="si">{</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s1">&#39;F1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;YOLOv8 model not found — run Notebook 03 first&quot;</span><span class="p">)</span>
+    <span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  YOLOv8: mAP@0.5=</span><span class="si">{</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s1">&#39;mAP@0.5&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, P=</span><span class="si">{</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s1">&#39;Precision&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, R=</span><span class="si">{</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s1">&#39;Recall&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, F1=</span><span class="si">{</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s1">&#39;F1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="c1"># --- Template Matching metrics (from Notebook 05 evaluation) ---</span>
-<span class="n">tm_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span> <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span> <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-<span class="c1"># Template matching metrics must be loaded from NB05 output or re-computed</span>
-<span class="c1"># For now, set placeholder — fill after running NB05</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Template matching metrics: fill from Notebook 05 evaluation output&quot;</span><span class="p">)</span>
+<span class="c1"># --- ResNet metrics (from NB04 classification report — GT crops) ---</span>
+<span class="n">resnet_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="mf">1.00</span><span class="p">,</span>
+    <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="mf">1.00</span><span class="p">,</span>
+    <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="mf">1.00</span><span class="p">,</span>
+    <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="c1"># --- ResNet metrics (from Notebook 04) ---</span>
-<span class="n">resnet_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span> <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span> <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
-<span class="n">resnet_path</span> <span class="o">=</span> <span class="n">MODELS_DIR</span> <span class="o">/</span> <span class="s2">&quot;resnet18_best.pth&quot;</span>
-<span class="k">if</span> <span class="n">resnet_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ResNet model found — load classification report from NB04 output&quot;</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ResNet model not found — run Notebook 04 first&quot;</span><span class="p">)</span>
+<span class="c1"># --- Template Matching metrics (from NB05 — DeepPCB evaluation) ---</span>
+<span class="n">tm_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="mf">0.0023</span><span class="p">,</span>
+    <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="mf">0.0116</span><span class="p">,</span>
+    <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="mf">0.0038</span><span class="p">,</span>
+    <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="c1"># --- Two-stage metrics ---</span>
-<span class="n">twostage_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+<span class="c1"># --- Two-stage metrics (from NB04 — 98.1% agreement, same detections as YOLO) ---</span>
+<span class="n">twostage_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Precision&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Recall&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">44</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">yolo_metrics</span> <span class="k">else</span> <span class="s2">&quot;N/A&quot;</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="c1"># Build comparison table (populated values where available, None otherwise)</span>
+<span class="c1"># Build comparison table</span>
 <span class="n">comparison</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">&quot;Approach&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;YOLOv8 (detection)&quot;</span><span class="p">,</span> <span class="s2">&quot;ResNet (classification)&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;YOLOv8 + ResNet (two-stage)&quot;</span><span class="p">,</span> <span class="s2">&quot;Template Matching&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">],</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Approach&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;YOLOv8 (detection)&quot;</span><span class="p">,</span> <span class="s2">&quot;ResNet (classification, GT crops)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YOLOv8 + ResNet (two-stage)&quot;</span><span class="p">,</span> <span class="s2">&quot;Template Matching (DeepPCB)&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;mAP@0.5&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">),</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">],</span>
                 <span class="n">twostage_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">],</span> <span class="n">tm_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5&quot;</span><span class="p">]],</span>
-    <span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">],</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">],</span>
-                     <span class="n">twostage_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">],</span> <span class="n">tm_metrics</span><span class="p">[</span><span class="s2">&quot;mAP@0.5:0.95&quot;</span><span class="p">]],</span>
-    <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">],</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Precision&quot;</span><span class="p">),</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">],</span>
                  <span class="n">twostage_metrics</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">],</span> <span class="n">tm_metrics</span><span class="p">[</span><span class="s2">&quot;Precision&quot;</span><span class="p">]],</span>
-    <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Recall&quot;</span><span class="p">],</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;Recall&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Recall&quot;</span><span class="p">),</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;Recall&quot;</span><span class="p">],</span>
               <span class="n">twostage_metrics</span><span class="p">[</span><span class="s2">&quot;Recall&quot;</span><span class="p">],</span> <span class="n">tm_metrics</span><span class="p">[</span><span class="s2">&quot;Recall&quot;</span><span class="p">]],</span>
-    <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;F1&quot;</span><span class="p">],</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;F1&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;F1&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;F1&quot;</span><span class="p">),</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;F1&quot;</span><span class="p">],</span>
            <span class="n">twostage_metrics</span><span class="p">[</span><span class="s2">&quot;F1&quot;</span><span class="p">],</span> <span class="n">tm_metrics</span><span class="p">[</span><span class="s2">&quot;F1&quot;</span><span class="p">]],</span>
-    <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">],</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Inference (ms)&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">yolo_metrics</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">),</span> <span class="n">resnet_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">],</span>
                       <span class="n">twostage_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">],</span> <span class="n">tm_metrics</span><span class="p">[</span><span class="s2">&quot;Inference (ms)&quot;</span><span class="p">]],</span>
 <span class="p">})</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">=== Model Comparison — Test Set ===&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">comparison</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Notes:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - ResNet evaluated on ground-truth crops (perfect localization) — not comparable to end-to-end detection&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Template matching evaluated on DeepPCB dataset (different domain than Kaggle)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Two-stage adds ~44ms latency for ResNet classification with 98.1</span><span class="si">% c</span><span class="s2">lass agreement&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -457,7 +472,7 @@ Ultralytics 8.4.22 🚀 Python-3.14.3 torch-2.10.0 CPU (Apple M4 Pro)
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model summary (fused): 73 layers, 3,006,818 parameters, 0 gradients, 8.1 GFLOPs
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">val: </span>Fast image access ✅ (ping: 0.0±0.0 ms, read: 11008.1±2485.3 MB/s, size: 1510.1 KB)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">val: </span>Fast image access ✅ (ping: 0.0±0.0 ms, read: 13860.7±1255.5 MB/s, size: 1380.3 KB)
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">val: </span>Scanning /Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/data/pcb-yolo/labels/test.cache... 104 images, 0 backgrounds, 0 corrupt: 100% ━━━━━━━━━━━━ 104/104 36.4Mit/s 0.0s
@@ -466,25 +481,25 @@ Ultralytics 8.4.22 🚀 Python-3.14.3 torch-2.10.0 CPU (Apple M4 Pro)
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 14% ━╸────────── 1/7 4.4s/it 1.3s&lt;26.4s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 14% ━╸────────── 1/7 4.5s/it 1.3s&lt;26.7s
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 29% ━━━───────── 2/7 3.0s/it 3.0s&lt;14.9s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 29% ━━━───────── 2/7 3.0s/it 3.0s&lt;15.0s
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 43% ━━━━━─────── 3/7 2.4s/it 4.7s&lt;9.8s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 43% ━━━━━─────── 3/7 2.5s/it 4.8s&lt;9.9s
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 57% ━━━━━━╸───── 4/7 2.2s/it 6.5s&lt;6.5s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 57% ━━━━━━╸───── 4/7 2.2s/it 6.6s&lt;6.6s
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 71% ━━━━━━━━╸─── 5/7 2.0s/it 8.2s&lt;4.1s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 71% ━━━━━━━━╸─── 5/7 2.1s/it 8.3s&lt;4.1s
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 86% ━━━━━━━━━━── 6/7 2.0s/it 10.1s&lt;2.0s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 86% ━━━━━━━━━━── 6/7 2.0s/it 10.2s&lt;2.0s
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 7/7 1.5s/it 10.3s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 7/7 1.5s/it 10.5s
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
@@ -493,22 +508,25 @@ Ultralytics 8.4.22 🚀 Python-3.14.3 torch-2.10.0 CPU (Apple M4 Pro)
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                   all        104        447      0.821      0.747      0.804      0.349
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Speed: 0.3ms preprocess, 80.5ms inference, 0.0ms loss, 0.1ms postprocess per image
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Speed: 0.3ms preprocess, 82.0ms inference, 0.0ms loss, 0.1ms postprocess per image
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Results saved to <span class=" -Color -Color-Bold">/Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/notebooks/runs/detect/val14</span>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Results saved to <span class=" -Color -Color-Bold">/Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/notebooks/runs/detect/val18</span>
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  YOLOv8: mAP@0.5=0.8043, F1=0.7824
-Template matching metrics: fill from Notebook 05 evaluation output
-ResNet model found — load classification report from NB04 output
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  YOLOv8: mAP@0.5=0.8043, P=0.8211, R=0.7471, F1=0.7824
 
 === Model Comparison — Test Set ===
-                   Approach mAP@0.5 mAP@0.5:0.95  Precision  Recall     F1  Inference (ms)
-         YOLOv8 (detection)  0.8043       0.3488     0.8211  0.7471 0.7824            40.6
-    ResNet (classification)     N/A          N/A        NaN     NaN    NaN             NaN
-YOLOv8 + ResNet (two-stage)    None         None        NaN     NaN    NaN             NaN
-          Template Matching     N/A          N/A        NaN     NaN    NaN             NaN
+                         Approach mAP@0.5  Precision  Recall     F1 Inference (ms)
+               YOLOv8 (detection)  0.8043     0.8211  0.7471 0.7824           42.9
+ResNet (classification, GT crops)     N/A     1.0000  1.0000 1.0000            N/A
+      YOLOv8 + ResNet (two-stage)  0.8043     0.8211  0.7471 0.7824           86.9
+      Template Matching (DeepPCB)     N/A     0.0023  0.0116 0.0038            N/A
+
+Notes:
+  - ResNet evaluated on ground-truth crops (perfect localization) — not comparable to end-to-end detection
+  - Template matching evaluated on DeepPCB dataset (different domain than Kaggle)
+  - Two-stage adds ~44ms latency for ResNet classification with 98.1% class agreement
 </pre></div>
 </div>
 </div>
@@ -547,7 +565,7 @@ YOLOv8 + ResNet (two-stage)    None         None        NaN     NaN    NaN      
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/a05dc7a694e1d312ed08c80a6d28bd2d651d0fe3d1ef43b79c8f06c089776eb4.png" src="../_images/a05dc7a694e1d312ed08c80a6d28bd2d651d0fe3d1ef43b79c8f06c089776eb4.png" />
+<img alt="../_images/b0153b2e080e1a781a4b20f13eccc9bbb5bcd92a4281828591c2a94cd17b17ce.png" src="../_images/b0153b2e080e1a781a4b20f13eccc9bbb5bcd92a4281828591c2a94cd17b17ce.png" />
 </div>
 </div>
 </section>
@@ -664,8 +682,11 @@ YOLOv8 + ResNet (two-stage)    None         None        NaN     NaN    NaN      
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>=== Cost Impact Analysis ===
-Approach  FP (est)  FN (est) Cost/1K boards Cost/10K boards
-  YOLOv8        17        26       $139,972      $1,399,724
+         Approach  FP (est)  FN (est) Cost/1K boards Cost/10K boards
+           YOLOv8        17        26       $139,972      $1,399,724
+    YOLOv8+ResNet        17        26       $139,972      $1,399,724
+Template Matching       523       103       $775,625      $7,756,256
+           ResNet         0         0             $0              $0
 
 Assumptions: FP rework = $50, FN warranty = $500
 FP/FN estimated from precision/recall on test set
