@@ -73,8 +73,45 @@ def postprocess_predictions(results, model_info):
                 "confidence": round(conf, 4),
                 "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)],
             })
+    elif model_info["type"] == "onnx":
+        boxes, scores, class_ids = results
+        for i in range(len(scores)):
+            x1, y1, x2, y2 = boxes[i].tolist()
+            predictions.append({
+                "class": CLASS_NAMES.get(int(class_ids[i]), f"unknown_{int(class_ids[i])}"),
+                "confidence": round(float(scores[i]), 4),
+                "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)],
+            })
 
     return predictions
+
+
+def _onnx_inference(img, session):
+    """Run inference using raw ONNX Runtime session with NMS post-processing."""
+    input_name = session.get_inputs()[0].name
+    input_shape = session.get_inputs()[0].shape
+    img_h, img_w = img.shape[:2]
+    target_h, target_w = input_shape[2], input_shape[3]
+
+    resized = cv2.resize(img, (target_w, target_h))
+    blob = resized.astype(np.float32) / 255.0
+    blob = blob.transpose(2, 0, 1)[np.newaxis, ...]
+
+    outputs = session.run(None, {input_name: blob})
+    preds = outputs[0][0].T  # (num_preds, 4+num_classes)
+
+    scores = preds[:, 4:].max(axis=1)
+    class_ids = preds[:, 4:].argmax(axis=1)
+    mask = scores > 0.25
+    preds, scores, class_ids = preds[mask], scores[mask], class_ids[mask]
+
+    boxes = preds[:, :4].copy()
+    boxes[:, 0] = (boxes[:, 0] - boxes[:, 2] / 2) * img_w / target_w
+    boxes[:, 1] = (boxes[:, 1] - boxes[:, 3] / 2) * img_h / target_h
+    boxes[:, 2] = (boxes[:, 0] + boxes[:, 2] * img_w / target_w)
+    boxes[:, 3] = (boxes[:, 1] + boxes[:, 3] * img_h / target_h)
+
+    return boxes, scores, class_ids
 
 
 def run_inference(img, model_info):
@@ -84,10 +121,7 @@ def run_inference(img, model_info):
     if model_info["type"] == "ultralytics":
         results = model_info["model"].predict(img, verbose=False)
     elif model_info["type"] == "onnx":
-        # For ONNX, use Ultralytics to handle pre/post processing
-        from ultralytics import YOLO
-        model = YOLO(model_info["path"])
-        results = model.predict(img, verbose=False)
+        results = _onnx_inference(img, model_info["session"])
 
     elapsed_ms = (time.time() - start) * 1000
     predictions = postprocess_predictions(results, model_info)

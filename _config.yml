@@ -5,6 +5,16 @@ logo: ""
 execute:
   execute_notebooks: "off"
 
+exclude_patterns:
+  - _bmad/**
+  - _bmad-output/**
+  - .claude/**
+  - .cursor/**
+  - .venv/**
+  - _build/**
+  - data/**
+  - models/**
+
 repository:
   url: ""
 
