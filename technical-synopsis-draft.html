@@ -1,0 +1,562 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PCB Defect Detection: An End-to-End Multi-Technique Computer Vision Pipeline &#8212; PCB Defect Detection Pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'technical-synopsis-draft';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PCB Defect Detection Pipeline</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    PCB Defect Detection Pipeline
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="notebooks/01-data-loading-and-eda.html">Notebook 01: Data Loading &amp; Exploratory Data Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/02-preprocessing-and-augmentation.html">Notebook 02: Preprocessing &amp; Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/03-yolov8-training-and-evaluation.html">Notebook 03: YOLOv8 Training &amp; Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/04-resnet-classification.html">Notebook 04: ResNet Classification on Cropped ROIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/05-template-matching-baseline.html">Notebook 05: Template Matching Baseline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/06-model-comparison-and-analysis.html">Notebook 06: Model Comparison &amp; Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/07-onnx-optimization.html">Notebook 07: ONNX Export &amp; Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/08-flask-inference-demo.html">Notebook 08: Flask Inference API Demo</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/technical-synopsis-draft.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>PCB Defect Detection: An End-to-End Multi-Technique Computer Vision Pipeline</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-statement">Problem Statement</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datasets-and-preprocessing">Datasets and Preprocessing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-architectures">Model Architectures</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-configuration">Training Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results-and-evaluation">Results and Evaluation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#challenges-and-solutions">Challenges and Solutions</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="pcb-defect-detection-an-end-to-end-multi-technique-computer-vision-pipeline">
+<h1>PCB Defect Detection: An End-to-End Multi-Technique Computer Vision Pipeline<a class="headerlink" href="#pcb-defect-detection-an-end-to-end-multi-technique-computer-vision-pipeline" title="Link to this heading">#</a></h1>
+<p><strong>Matt Miller</strong> | Northwestern University | COMP_SCI 449: Computer Vision | March 2026</p>
+<section id="problem-statement">
+<h2>Problem Statement<a class="headerlink" href="#problem-statement" title="Link to this heading">#</a></h2>
+<p>PCB manufacturing requires high-throughput defect inspection where missed defects (false negatives) risk costly product failures while false positives waste rework time. This project builds a reproducible pipeline detecting six defect types — missing hole, mouse bite, open circuit, short, spur, and spurious copper — comparing classical template matching, YOLOv8 object detection, and a YOLOv8+ResNet two-stage pipeline, with ONNX export for deployment optimization.</p>
+</section>
+<section id="datasets-and-preprocessing">
+<h2>Datasets and Preprocessing<a class="headerlink" href="#datasets-and-preprocessing" title="Link to this heading">#</a></h2>
+<p>The <strong>Kaggle PCB Defects</strong> dataset provides 693 images with 2,953 bounding box annotations across 6 nearly balanced classes (imbalance ratio 1.04x). Images average 2778×2138 px. Pascal VOC XML annotations were converted to YOLO normalized format and split 70/15/15 stratified (485/104/104 images). <strong>DeepPCB</strong> provides 1,500 paired template/defective images reserved exclusively for template matching evaluation.</p>
+<p>Images are letterbox-resized to 640×640 with aspect-preserving padding. YOLOv8 normalizes pixels to [0,1] internally; ResNet uses ImageNet normalization (μ=[0.485,0.456,0.406], σ=[0.229,0.224,0.225]). Augmentation includes mosaic, flips (horizontal + vertical), 90° rotation, HSV jitter, and scale variation — all PCB-appropriate since boards lack canonical orientation.</p>
+</section>
+<section id="model-architectures">
+<h2>Model Architectures<a class="headerlink" href="#model-architectures" title="Link to this heading">#</a></h2>
+<p><strong>Template Matching.</strong> Given a defect-free template <em>T</em> and test image <em>I</em>, we align via ORB feature matching with RANSAC homography, compute <em>D(x,y)=|T_aligned(x,y)−I(x,y)|</em>, apply Gaussian blur and Otsu thresholding to produce a binary mask, then extract bounding boxes via contour detection (min area 50px²).</p>
+<p><strong>YOLOv8.</strong> Anchor-free single-stage detector with CSPDarknet53 backbone, PAN feature fusion neck, and decoupled classification/regression head. Loss combines CIoU (box), BCE (class), and distribution focal loss (DFL). Task-aligned assignment replaces IoU-based matching.</p>
+<p><strong>ResNet-18.</strong> Pretrained on ImageNet with final FC layer replaced (512→6 classes). Residual connections (<em>y=F(x,{Wᵢ})+x</em>) enable effective fine-tuning. In the two-stage pipeline, YOLOv8 detects regions → crops are classified by ResNet.</p>
+</section>
+<section id="training-configuration">
+<h2>Training Configuration<a class="headerlink" href="#training-configuration" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p></p></th>
+<th class="head"><p>YOLOv8n</p></th>
+<th class="head"><p>ResNet-18</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Epochs</p></td>
+<td><p>100 (patience=10)</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-odd"><td><p>Optimizer</p></td>
+<td><p>AdamW, lr=0.01</p></td>
+<td><p>Adam, lr=1e-4</p></td>
+</tr>
+<tr class="row-even"><td><p>Scheduler</p></td>
+<td><p>—</p></td>
+<td><p>CosineAnnealingLR</p></td>
+</tr>
+<tr class="row-odd"><td><p>Input size</p></td>
+<td><p>640×640</p></td>
+<td><p>224×224 (cropped ROIs)</p></td>
+</tr>
+<tr class="row-even"><td><p>Batch size</p></td>
+<td><p>16</p></td>
+<td><p>32</p></td>
+</tr>
+<tr class="row-odd"><td><p>Frozen layers</p></td>
+<td><p>—</p></td>
+<td><p>conv1 through layer3</p></td>
+</tr>
+<tr class="row-even"><td><p>Loss</p></td>
+<td><p>CIoU+BCE+DFL</p></td>
+<td><p>CrossEntropyLoss</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="results-and-evaluation">
+<h2>Results and Evaluation<a class="headerlink" href="#results-and-evaluation" title="Link to this heading">#</a></h2>
+<p><strong>Template matching baseline</strong> evaluated on 1,500 DeepPCB pairs (IoU≥0.5): Precision=0.0023, Recall=0.0116, F1=0.0038. The near-zero precision reflects catastrophic false positive rates from alignment artifacts and lighting variation in pixel differencing. This establishes clear motivation for learned representations.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Approach</p></th>
+<th class="head"><p>mAP&#64;0.5</p></th>
+<th class="head"><p>Precision</p></th>
+<th class="head"><p>Recall</p></th>
+<th class="head"><p>F1</p></th>
+<th class="head"><p>Inference (ms)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Template Matching</p></td>
+<td><p>N/A</p></td>
+<td><p>0.002</p></td>
+<td><p>0.012</p></td>
+<td><p>0.004</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>YOLOv8</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+</tr>
+<tr class="row-even"><td><p>ResNet (classification)</p></td>
+<td><p>N/A</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+</tr>
+<tr class="row-odd"><td><p>YOLOv8+ResNet (two-stage)</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+<td><p>[PENDING]</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>[PENDING: Per-class analysis, confusion matrix discussion, two-stage agreement analysis, ONNX optimization benchmarks (PyTorch vs ONNX vs INT8 — size, latency, quality gates ≤2% mAP drop, ≤1% recall drop).]</p>
+</section>
+<section id="challenges-and-solutions">
+<h2>Challenges and Solutions<a class="headerlink" href="#challenges-and-solutions" title="Link to this heading">#</a></h2>
+<p><strong>Format heterogeneity.</strong> Kaggle (Pascal VOC XML) and DeepPCB (custom TXT with different class IDs) required dedicated converters to a canonical YOLO format with unified alphabetical class ordering, validated by visual spot-checks.</p>
+<p><strong>Resolution scaling.</strong> Source images (2778×2138) resized to 640×640 risk losing small defects. Letterbox padding preserves aspect ratio; multi-scale augmentation and the FPN neck partially mitigate detail loss.</p>
+<p><strong>Template matching limitations.</strong> Classical differencing fundamentally cannot discriminate defect types and requires per-design reference templates. Alignment failures on uniform PCB regions produce systematic false positives, confirming that learned features are essential for production-grade inspection.</p>
+<p>[PENDING: Model-specific challenges from training — convergence behavior, class-specific failure modes, ONNX export considerations.]</p>
+<hr class="docutils" />
+<p><em>Code repository and Jupyter Book: [GitHub URL]</em></p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-statement">Problem Statement</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datasets-and-preprocessing">Datasets and Preprocessing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-architectures">Model Architectures</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-configuration">Training Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#results-and-evaluation">Results and Evaluation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#challenges-and-solutions">Challenges and Solutions</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Matt Miller
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

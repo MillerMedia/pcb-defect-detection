@@ -1,0 +1,1491 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Notebook 01: Data Loading &amp; Exploratory Data Analysis &#8212; PCB Defect Detection Pipeline</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/01-data-loading-and-eda';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Notebook 02: Preprocessing &amp; Augmentation" href="02-preprocessing-and-augmentation.html" />
+    <link rel="prev" title="PCB Defect Detection Pipeline" href="../intro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">PCB Defect Detection Pipeline</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    PCB Defect Detection Pipeline
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Notebook 01: Data Loading &amp; Exploratory Data Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="02-preprocessing-and-augmentation.html">Notebook 02: Preprocessing &amp; Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03-yolov8-training-and-evaluation.html">Notebook 03: YOLOv8 Training &amp; Evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04-resnet-classification.html">Notebook 04: ResNet Classification on Cropped ROIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05-template-matching-baseline.html">Notebook 05: Template Matching Baseline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="06-model-comparison-and-analysis.html">Notebook 06: Model Comparison &amp; Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="07-onnx-optimization.html">Notebook 07: ONNX Export &amp; Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="08-flask-inference-demo.html">Notebook 08: Flask Inference API Demo</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/notebooks/01-data-loading-and-eda.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Notebook 01: Data Loading & Exploratory Data Analysis</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#download-kaggle-pcb-defects-dataset">1. Download Kaggle PCB Defects Dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#download-deeppcb-dataset">2. Download DeepPCB Dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pascal-voc-xml-yolo-txt-conversion-kaggle-dataset">3. Pascal VOC XML → YOLO TXT Conversion (Kaggle Dataset)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeppcb-custom-txt-yolo-txt-conversion">4. DeepPCB Custom TXT → YOLO TXT Conversion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-val-test-split-70-15-15">5. Train / Val / Test Split (70/15/15)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploratory-data-analysis">6. Exploratory Data Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observations-class-distribution">Observations — Class Distribution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observations-image-dimensions-annotation-density">Observations — Image Dimensions &amp; Annotation Density</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-statistics">7. Summary Statistics</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="notebook-01-data-loading-exploratory-data-analysis">
+<h1>Notebook 01: Data Loading &amp; Exploratory Data Analysis<a class="headerlink" href="#notebook-01-data-loading-exploratory-data-analysis" title="Link to this heading">#</a></h1>
+<p>This notebook handles the complete data pipeline:</p>
+<ol class="arabic simple">
+<li><p>Download and extract the <strong>Kaggle PCB Defects</strong> dataset (1,386 images, Pascal VOC XML)</p></li>
+<li><p>Download and extract the <strong>DeepPCB</strong> dataset (1,500 paired images, custom TXT)</p></li>
+<li><p>Convert all annotations to <strong>YOLO TXT format</strong> with a canonical class mapping</p></li>
+<li><p>Create a <strong>70/15/15 stratified train/val/test split</strong> (Kaggle dataset only)</p></li>
+<li><p>Perform <strong>exploratory data analysis</strong> with visualizations</p></li>
+</ol>
+<p><strong>Canonical class order (alphabetical):</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>Class</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>missing_hole</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>mouse_bite</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>open_circuit</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>short</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>spur</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>spurious_copper</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setup and imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;whitegrid&quot;</span><span class="p">)</span>
+
+<span class="c1"># Project paths</span>
+<span class="n">PROJECT_ROOT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>  <span class="c1"># assumes running from notebooks/</span>
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">PROJECT_ROOT</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+<span class="n">KAGGLE_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;pcb-defects&quot;</span>
+<span class="n">DEEPPCB_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;deeppcb&quot;</span>
+<span class="n">YOLO_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;pcb-yolo&quot;</span>  <span class="c1"># converted YOLO dataset</span>
+
+<span class="c1"># Canonical class mapping (alphabetical)</span>
+<span class="n">CLASS_NAMES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;missing_hole&quot;</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;mouse_bite&quot;</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;open_circuit&quot;</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;short&quot;</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;spur&quot;</span><span class="p">,</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="s2">&quot;spurious_copper&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">NAME_TO_ID</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">CLASS_NAMES</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Project root: </span><span class="si">{</span><span class="n">PROJECT_ROOT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data directory: </span><span class="si">{</span><span class="n">DATA_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class mapping: </span><span class="si">{</span><span class="n">CLASS_NAMES</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Project root: /Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project
+Data directory: /Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/data
+Class mapping: {0: &#39;missing_hole&#39;, 1: &#39;mouse_bite&#39;, 2: &#39;open_circuit&#39;, 3: &#39;short&#39;, 4: &#39;spur&#39;, 5: &#39;spurious_copper&#39;}
+</pre></div>
+</div>
+</div>
+</div>
+<section id="download-kaggle-pcb-defects-dataset">
+<h2>1. Download Kaggle PCB Defects Dataset<a class="headerlink" href="#download-kaggle-pcb-defects-dataset" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://www.kaggle.com/datasets/akhatova/pcb-defects">PCB Defects dataset on Kaggle</a> contains <strong>1,386 images</strong> of PCB boards with <strong>6 defect types</strong> annotated in Pascal VOC XML format.</p>
+<p><strong>Option A (Kaggle API):</strong> Requires <code class="docutils literal notranslate"><span class="pre">~/.kaggle/kaggle.json</span></code> credentials.<br />
+<strong>Option B (Manual):</strong> Download from Kaggle, extract to <code class="docutils literal notranslate"><span class="pre">data/pcb-defects/</span></code>.</p>
+<p>The dataset structure after extraction:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data/pcb-defects/
+├── images/
+│   ├── Missing_hole/
+│   ├── Mouse_bite/
+│   ├── Open_circuit/
+│   ├── Short/
+│   ├── Spur/
+│   └── Spurious_copper/
+└── Annotations/
+    ├── Missing_hole/
+    ├── Mouse_bite/
+    ├── Open_circuit/
+    ├── Short/
+    ├── Spur/
+    └── Spurious_copper/
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download Kaggle PCB Defects dataset</span>
+<span class="c1"># Option A: Kaggle API (uncomment if credentials are configured)</span>
+<span class="c1"># !pip install -q kaggle</span>
+<span class="c1"># !kaggle datasets download -d akhatova/pcb-defects -p {DATA_DIR} --unzip</span>
+
+<span class="c1"># Option B: Manual download</span>
+<span class="c1"># Download from https://www.kaggle.com/datasets/akhatova/pcb-defects</span>
+<span class="c1"># Extract to data/pcb-defects/</span>
+
+<span class="c1"># Verify dataset exists</span>
+<span class="k">if</span> <span class="n">KAGGLE_DIR</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">image_dirs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="n">KAGGLE_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()])</span>
+    <span class="n">annot_dirs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">(</span><span class="n">KAGGLE_DIR</span> <span class="o">/</span> <span class="s2">&quot;Annotations&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ Kaggle PCB Defects found at </span><span class="si">{</span><span class="n">KAGGLE_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Image subdirectories: </span><span class="si">{</span><span class="n">image_dirs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Annotation subdirectories: </span><span class="si">{</span><span class="n">annot_dirs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Count images per class</span>
+    <span class="k">for</span> <span class="n">subdir</span> <span class="ow">in</span> <span class="n">image_dirs</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">((</span><span class="n">KAGGLE_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="n">subdir</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.jpg&quot;</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">subdir</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> images&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ Dataset not found at </span><span class="si">{</span><span class="n">KAGGLE_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Please download from Kaggle and extract to data/pcb-defects/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>✓ Kaggle PCB Defects found at /Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/data/pcb-defects
+  Image subdirectories: [&#39;Missing_hole&#39;, &#39;Mouse_bite&#39;, &#39;Open_circuit&#39;, &#39;Short&#39;, &#39;Spur&#39;, &#39;Spurious_copper&#39;]
+  Annotation subdirectories: [&#39;Missing_hole&#39;, &#39;Mouse_bite&#39;, &#39;Open_circuit&#39;, &#39;Short&#39;, &#39;Spur&#39;, &#39;Spurious_copper&#39;]
+  Missing_hole: 115 images
+  Mouse_bite: 115 images
+  Open_circuit: 116 images
+  Short: 116 images
+  Spur: 115 images
+  Spurious_copper: 116 images
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="download-deeppcb-dataset">
+<h2>2. Download DeepPCB Dataset<a class="headerlink" href="#download-deeppcb-dataset" title="Link to this heading">#</a></h2>
+<p>The <a class="reference external" href="https://github.com/tangsanli5201/DeepPCB">DeepPCB dataset</a> contains <strong>1,500 paired images</strong> — each pair consists of a defect-free template and a defective test image. Annotations are in a custom TXT format with bounding boxes.</p>
+<p>DeepPCB is used <strong>only for template matching</strong> (Notebook 05). It is <strong>not merged</strong> into the YOLO training set.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download DeepPCB dataset</span>
+<span class="c1"># Option A: Git clone (uncomment)</span>
+<span class="c1"># !git clone https://github.com/tangsanli5201/DeepPCB.git {DEEPPCB_DIR}</span>
+
+<span class="c1"># Option B: Manual download from GitHub releases</span>
+<span class="c1"># Extract to data/deeppcb/</span>
+
+<span class="c1"># Verify dataset exists</span>
+<span class="k">if</span> <span class="n">DEEPPCB_DIR</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="c1"># DeepPCB structure: PCBData/group{XXXXX}/{XXXXX}/ with *_test.jpg, *_temp.jpg</span>
+    <span class="c1">#                    PCBData/group{XXXXX}/{XXXXX}_not/ with annotation .txt files</span>
+    <span class="n">pcb_data</span> <span class="o">=</span> <span class="n">DEEPPCB_DIR</span> <span class="o">/</span> <span class="s2">&quot;PCBData&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pcb_data</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DEEPPCB_DIR</span> <span class="o">/</span> <span class="s2">&quot;DeepPCB&quot;</span> <span class="o">/</span> <span class="s2">&quot;PCBData&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">candidate</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">pcb_data</span> <span class="o">=</span> <span class="n">candidate</span>
+                <span class="k">break</span>
+    
+    <span class="k">if</span> <span class="n">pcb_data</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">pcb_data</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()])</span>
+        <span class="n">total_pairs</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+            <span class="c1"># Check nested structure: group{X}/{X}/*_test.jpg</span>
+            <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">sub</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">sub</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_not&quot;</span><span class="p">):</span>
+                    <span class="n">test_imgs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sub</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_test.jpg&quot;</span><span class="p">))</span>
+                    <span class="n">total_pairs</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_imgs</span><span class="p">)</span>
+            <span class="c1"># Also check flat structure (fallback)</span>
+            <span class="n">total_pairs</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_test.jpg&quot;</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ DeepPCB found at </span><span class="si">{</span><span class="n">DEEPPCB_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Groups: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total test/template pairs: </span><span class="si">{</span><span class="n">total_pairs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ DeepPCB directory exists but PCBData not found&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Contents: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">DEEPPCB_DIR</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ DeepPCB not found at </span><span class="si">{</span><span class="n">DEEPPCB_DIR</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Please clone from https://github.com/tangsanli5201/DeepPCB&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>✓ DeepPCB found at /Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/data/deeppcb
+  Groups: 11
+  Total test/template pairs: 1500
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="pascal-voc-xml-yolo-txt-conversion-kaggle-dataset">
+<h2>3. Pascal VOC XML → YOLO TXT Conversion (Kaggle Dataset)<a class="headerlink" href="#pascal-voc-xml-yolo-txt-conversion-kaggle-dataset" title="Link to this heading">#</a></h2>
+<p>Each Pascal VOC XML annotation contains bounding boxes in absolute pixel coordinates:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;object&gt;</span>
+<span class="w">  </span><span class="nt">&lt;name&gt;</span>missing_hole<span class="nt">&lt;/name&gt;</span>
+<span class="w">  </span><span class="nt">&lt;bndbox&gt;</span>
+<span class="w">    </span><span class="nt">&lt;xmin&gt;</span>100<span class="nt">&lt;/xmin&gt;&lt;ymin&gt;</span>200<span class="nt">&lt;/ymin&gt;</span>
+<span class="w">    </span><span class="nt">&lt;xmax&gt;</span>150<span class="nt">&lt;/xmax&gt;&lt;ymax&gt;</span>250<span class="nt">&lt;/ymax&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/bndbox&gt;</span>
+<span class="nt">&lt;/object&gt;</span>
+</pre></div>
+</div>
+<p>YOLO TXT format uses <strong>normalized center coordinates</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">class_id</span> <span class="n">x_center</span> <span class="n">y_center</span> <span class="n">width</span> <span class="n">height</span>
+</pre></div>
+</div>
+<p>All values are relative to image dimensions (0.0–1.0).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># VOC XML class name → canonical class ID mapping</span>
+<span class="c1"># The Kaggle dataset uses folder names as class identifiers</span>
+<span class="n">VOC_CLASS_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;missing_hole&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;Missing_hole&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;mouse_bite&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;Mouse_bite&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;open_circuit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;Open_circuit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;short&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;Short&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;spur&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">&quot;Spur&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">&quot;spurious_copper&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s2">&quot;Spurious_copper&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_voc_xml</span><span class="p">(</span><span class="n">xml_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a Pascal VOC XML annotation file.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        list of (class_name, xmin, ymin, xmax, ymax) tuples</span>
+<span class="sd">        image_width, image_height</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">xml_path</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    
+    <span class="n">size</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">)</span>
+    <span class="n">img_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">img_h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;height&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    
+    <span class="n">objects</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;bndbox&quot;</span><span class="p">)</span>
+        <span class="n">xmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;xmin&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">ymin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;ymin&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">xmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;xmax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">ymax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bbox</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;ymax&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">objects</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">voc_to_yolo</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">class_map</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert VOC bounding boxes to YOLO format.</span>
+<span class="sd">    </span>
+<span class="sd">    YOLO format: class_id x_center y_center width height (all normalized 0-1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">yolo_lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">class_map</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Warning: unknown class &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, skipping&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        
+        <span class="n">class_id</span> <span class="o">=</span> <span class="n">class_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">x_center</span> <span class="o">=</span> <span class="p">((</span><span class="n">xmin</span> <span class="o">+</span> <span class="n">xmax</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_w</span>
+        <span class="n">y_center</span> <span class="o">=</span> <span class="p">((</span><span class="n">ymin</span> <span class="o">+</span> <span class="n">ymax</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_h</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_w</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_h</span>
+        
+        <span class="c1"># Clamp to [0, 1]</span>
+        <span class="n">x_center</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">x_center</span><span class="p">))</span>
+        <span class="n">y_center</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">y_center</span><span class="p">))</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">width</span><span class="p">))</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+        
+        <span class="n">yolo_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">class_id</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">x_center</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">y_center</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">width</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">height</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">yolo_lines</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converter functions defined ✓&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Converter functions defined ✓
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert the entire Kaggle PCB Defects dataset from VOC XML → YOLO TXT</span>
+<span class="c1"># Output: data/pcb-yolo/images/ and data/pcb-yolo/labels/ (flat structure)</span>
+
+<span class="n">YOLO_IMAGES</span> <span class="o">=</span> <span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="s2">&quot;all&quot;</span>
+<span class="n">YOLO_LABELS</span> <span class="o">=</span> <span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;labels&quot;</span> <span class="o">/</span> <span class="s2">&quot;all&quot;</span>
+<span class="n">YOLO_IMAGES</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">YOLO_LABELS</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">conversion_stats</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+<span class="n">all_records</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># (image_path, label_path, class_ids, folder_class)</span>
+
+<span class="n">annotation_root</span> <span class="o">=</span> <span class="n">KAGGLE_DIR</span> <span class="o">/</span> <span class="s2">&quot;Annotations&quot;</span>
+<span class="n">image_root</span> <span class="o">=</span> <span class="n">KAGGLE_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span>
+
+<span class="k">for</span> <span class="n">class_folder</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">annotation_root</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">class_folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">continue</span>
+    
+    <span class="n">folder_name</span> <span class="o">=</span> <span class="n">class_folder</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># e.g., &quot;Missing_hole&quot;</span>
+    <span class="n">xml_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">class_folder</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.xml&quot;</span><span class="p">))</span>
+    
+    <span class="k">for</span> <span class="n">xml_path</span> <span class="ow">in</span> <span class="n">xml_files</span><span class="p">:</span>
+        <span class="n">stem</span> <span class="o">=</span> <span class="n">xml_path</span><span class="o">.</span><span class="n">stem</span>
+        
+        <span class="c1"># Find matching image (try .jpg, .png)</span>
+        <span class="n">img_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;.jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="s2">&quot;.bmp&quot;</span><span class="p">]:</span>
+            <span class="n">candidate</span> <span class="o">=</span> <span class="n">image_root</span> <span class="o">/</span> <span class="n">folder_name</span> <span class="o">/</span> <span class="p">(</span><span class="n">stem</span> <span class="o">+</span> <span class="n">ext</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">candidate</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">img_path</span> <span class="o">=</span> <span class="n">candidate</span>
+                <span class="k">break</span>
+        
+        <span class="k">if</span> <span class="n">img_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conversion_stats</span><span class="p">[</span><span class="s2">&quot;missing_image&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># Parse VOC XML</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">objects</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">parse_voc_xml</span><span class="p">(</span><span class="n">xml_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">conversion_stats</span><span class="p">[</span><span class="s2">&quot;parse_error&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># Convert to YOLO</span>
+        <span class="n">yolo_lines</span> <span class="o">=</span> <span class="n">voc_to_yolo</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">VOC_CLASS_MAP</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">yolo_lines</span><span class="p">:</span>
+            <span class="n">conversion_stats</span><span class="p">[</span><span class="s2">&quot;no_objects&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># Use unique filename: {folder}_{stem} to avoid collisions</span>
+        <span class="n">unique_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">folder_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="c1"># Copy image</span>
+        <span class="n">dst_img</span> <span class="o">=</span> <span class="n">YOLO_IMAGES</span> <span class="o">/</span> <span class="p">(</span><span class="n">unique_name</span> <span class="o">+</span> <span class="n">img_path</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dst_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">dst_img</span><span class="p">)</span>
+        
+        <span class="c1"># Write YOLO label</span>
+        <span class="n">dst_label</span> <span class="o">=</span> <span class="n">YOLO_LABELS</span> <span class="o">/</span> <span class="p">(</span><span class="n">unique_name</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_label</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">yolo_lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Track class IDs in this annotation</span>
+        <span class="n">class_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">yolo_lines</span><span class="p">]</span>
+        <span class="n">all_records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst_img</span><span class="p">),</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst_label</span><span class="p">),</span>
+            <span class="s2">&quot;class_ids&quot;</span><span class="p">:</span> <span class="n">class_ids</span><span class="p">,</span>
+            <span class="s2">&quot;primary_class&quot;</span><span class="p">:</span> <span class="n">folder_name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span>
+            <span class="s2">&quot;num_objects&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">yolo_lines</span><span class="p">),</span>
+        <span class="p">})</span>
+        <span class="n">conversion_stats</span><span class="p">[</span><span class="s2">&quot;converted&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Conversion complete:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Converted: </span><span class="si">{</span><span class="n">conversion_stats</span><span class="p">[</span><span class="s1">&#39;converted&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Missing images: </span><span class="si">{</span><span class="n">conversion_stats</span><span class="p">[</span><span class="s1">&#39;missing_image&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Parse errors: </span><span class="si">{</span><span class="n">conversion_stats</span><span class="p">[</span><span class="s1">&#39;parse_error&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  No objects: </span><span class="si">{</span><span class="n">conversion_stats</span><span class="p">[</span><span class="s1">&#39;no_objects&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total YOLO label files: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">YOLO_LABELS</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.txt&#39;</span><span class="p">)))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Conversion complete:
+  Converted: 693
+  Missing images: 0
+  Parse errors: 0
+  No objects: 0
+  Total YOLO label files: 693
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Spot-check: visualize a random converted annotation to verify correctness</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">visualize_yolo_annotation</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">label_path</span><span class="p">,</span> <span class="n">class_names</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Overlay YOLO bounding boxes on an image.&quot;&quot;&quot;</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+    <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+    
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Set2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">class_names</span><span class="p">)))</span>
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">label_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">cls_id</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+            
+            <span class="c1"># Convert normalized YOLO → pixel coordinates</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="p">(</span><span class="n">xc</span> <span class="o">-</span> <span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">img_w</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="p">(</span><span class="n">yc</span> <span class="o">-</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">img_h</span>
+            <span class="n">box_w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">img_w</span>
+            <span class="n">box_h</span> <span class="o">=</span> <span class="n">h</span> <span class="o">*</span> <span class="n">img_h</span>
+            
+            <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">cls_id</span><span class="p">]</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">box_w</span><span class="p">,</span> <span class="n">box_h</span><span class="p">,</span>
+                                     <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">-</span> <span class="mi">5</span><span class="p">,</span> <span class="n">class_names</span><span class="p">[</span><span class="n">cls_id</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">,</span>
+                    <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s2">&quot;round,pad=0.2&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">))</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Show 6 random samples</span>
+<span class="k">if</span> <span class="n">all_records</span><span class="p">:</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">all_records</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_records</span><span class="p">)))</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">rec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
+        <span class="n">visualize_yolo_annotation</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">CLASS_NAMES</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Spot-Check: YOLO Annotation Conversion (6 Random Samples)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No records to visualize — run conversion cell first&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/a488824f7c5e689ad4393cc0ac3d46237858fbfa8b91d221c0a2493a78a34f60.png" src="../_images/a488824f7c5e689ad4393cc0ac3d46237858fbfa8b91d221c0a2493a78a34f60.png" />
+</div>
+</div>
+</section>
+<section id="deeppcb-custom-txt-yolo-txt-conversion">
+<h2>4. DeepPCB Custom TXT → YOLO TXT Conversion<a class="headerlink" href="#deeppcb-custom-txt-yolo-txt-conversion" title="Link to this heading">#</a></h2>
+<p>DeepPCB annotations use a custom format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x1</span> <span class="n">y1</span> <span class="n">x2</span> <span class="n">y2</span> <span class="n">class_id</span>
+</pre></div>
+</div>
+<p>where class_id ranges from 0–5 (but in DeepPCB’s own ordering). We map these to our canonical class order.</p>
+<p><strong>Important:</strong> DeepPCB labels are converted but stored separately — they are NOT mixed into the YOLO training set. They are used only for template matching evaluation in Notebook 05.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># DeepPCB class mapping to canonical order</span>
+<span class="c1"># DeepPCB original: 0=open, 1=short, 2=mousebite, 3=spur, 4=copper, 5=pin_hole</span>
+<span class="c1"># Canonical:        0=missing_hole, 1=mouse_bite, 2=open_circuit, 3=short, 4=spur, 5=spurious_copper</span>
+<span class="n">DEEPPCB_TO_CANONICAL</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># open → open_circuit</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="c1"># short → short</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># mousebite → mouse_bite</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>  <span class="c1"># spur → spur</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>  <span class="c1"># copper → spurious_copper</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># pin_hole → missing_hole</span>
+<span class="p">}</span>
+
+<span class="n">DEEPPCB_YOLO_DIR</span> <span class="o">=</span> <span class="n">DATA_DIR</span> <span class="o">/</span> <span class="s2">&quot;deeppcb-yolo&quot;</span>
+<span class="n">DEEPPCB_YOLO_IMAGES</span> <span class="o">=</span> <span class="n">DEEPPCB_YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span>
+<span class="n">DEEPPCB_YOLO_LABELS</span> <span class="o">=</span> <span class="n">DEEPPCB_YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;labels&quot;</span>
+<span class="n">DEEPPCB_YOLO_TEMPLATES</span> <span class="o">=</span> <span class="n">DEEPPCB_YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;templates&quot;</span>
+<span class="n">DEEPPCB_YOLO_IMAGES</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">DEEPPCB_YOLO_LABELS</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">DEEPPCB_YOLO_TEMPLATES</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">deeppcb_records</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">deeppcb_stats</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+
+<span class="c1"># Find PCBData directory</span>
+<span class="n">pcb_data_dir</span> <span class="o">=</span> <span class="n">DEEPPCB_DIR</span> <span class="o">/</span> <span class="s2">&quot;PCBData&quot;</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">pcb_data_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DEEPPCB_DIR</span> <span class="o">/</span> <span class="s2">&quot;DeepPCB&quot;</span> <span class="o">/</span> <span class="s2">&quot;PCBData&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">candidate</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">pcb_data_dir</span> <span class="o">=</span> <span class="n">candidate</span>
+            <span class="k">break</span>
+
+<span class="k">if</span> <span class="n">pcb_data_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">group_dir</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pcb_data_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">group_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># DeepPCB structure: group{XXXXX}/{XXXXX}/ has images, {XXXXX}_not/ has annotations</span>
+        <span class="c1"># Find image subdirectory and annotation subdirectory</span>
+        <span class="n">img_subdir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">annot_subdir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">group_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sub</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">sub</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_not&quot;</span><span class="p">):</span>
+                <span class="n">annot_subdir</span> <span class="o">=</span> <span class="n">sub</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">img_subdir</span> <span class="o">=</span> <span class="n">sub</span>
+        
+        <span class="k">if</span> <span class="n">img_subdir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">annot_subdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Fallback: try old format where annotations are *_test.txt in group dir</span>
+            <span class="k">for</span> <span class="n">annot_path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">group_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_test.txt&quot;</span><span class="p">)):</span>
+                <span class="n">stem</span> <span class="o">=</span> <span class="n">annot_path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_test&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">test_img</span> <span class="o">=</span> <span class="n">group_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">_test.jpg&quot;</span>
+                <span class="n">temp_img</span> <span class="o">=</span> <span class="n">group_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">_temp.jpg&quot;</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">test_img</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">temp_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                    <span class="n">deeppcb_stats</span><span class="p">[</span><span class="s2">&quot;missing_pair&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+                <span class="c1"># Process with old format...</span>
+            <span class="k">continue</span>
+        
+        <span class="c1"># Process each annotation file in the _not directory</span>
+        <span class="k">for</span> <span class="n">annot_path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">annot_subdir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.txt&quot;</span><span class="p">)):</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">annot_path</span><span class="o">.</span><span class="n">stem</span>  <span class="c1"># e.g., &quot;00041000&quot;</span>
+            <span class="n">test_img</span> <span class="o">=</span> <span class="n">img_subdir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">_test.jpg&quot;</span>
+            <span class="n">temp_img</span> <span class="o">=</span> <span class="n">img_subdir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">_temp.jpg&quot;</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">test_img</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">temp_img</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">deeppcb_stats</span><span class="p">[</span><span class="s2">&quot;missing_pair&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            
+            <span class="c1"># Read image dimensions</span>
+            <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">test_img</span><span class="p">)</span> <span class="k">as</span> <span class="n">img</span><span class="p">:</span>
+                <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+            
+            <span class="c1"># Parse DeepPCB annotation (format: x1 y1 x2 y2 class_id per line)</span>
+            <span class="n">yolo_lines</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">annot_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="n">orig_class</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+                    
+                    <span class="k">if</span> <span class="n">orig_class</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DEEPPCB_TO_CANONICAL</span><span class="p">:</span>
+                        <span class="n">deeppcb_stats</span><span class="p">[</span><span class="s2">&quot;unknown_class&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">continue</span>
+                    
+                    <span class="n">canonical_id</span> <span class="o">=</span> <span class="n">DEEPPCB_TO_CANONICAL</span><span class="p">[</span><span class="n">orig_class</span><span class="p">]</span>
+                    
+                    <span class="c1"># Convert to YOLO normalized format</span>
+                    <span class="n">xc</span> <span class="o">=</span> <span class="p">((</span><span class="n">x1</span> <span class="o">+</span> <span class="n">x2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_w</span>
+                    <span class="n">yc</span> <span class="o">=</span> <span class="p">((</span><span class="n">y1</span> <span class="o">+</span> <span class="n">y2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_h</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_w</span>
+                    <span class="n">h</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_h</span>
+                    
+                    <span class="n">xc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">xc</span><span class="p">))</span>
+                    <span class="n">yc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">yc</span><span class="p">))</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+                    <span class="n">h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+                    
+                    <span class="n">yolo_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">canonical_id</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">xc</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">yc</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">w</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">h</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">yolo_lines</span><span class="p">:</span>
+                <span class="n">deeppcb_stats</span><span class="p">[</span><span class="s2">&quot;no_defects&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            
+            <span class="n">unique_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="c1"># Copy images</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">test_img</span><span class="p">,</span> <span class="n">DEEPPCB_YOLO_IMAGES</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">unique_name</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">temp_img</span><span class="p">,</span> <span class="n">DEEPPCB_YOLO_TEMPLATES</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">unique_name</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Write YOLO label</span>
+            <span class="n">label_path</span> <span class="o">=</span> <span class="n">DEEPPCB_YOLO_LABELS</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">unique_name</span><span class="si">}</span><span class="s2">.txt&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">label_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">yolo_lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">class_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">yolo_lines</span><span class="p">]</span>
+            <span class="n">deeppcb_records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEEPPCB_YOLO_IMAGES</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">unique_name</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEEPPCB_YOLO_TEMPLATES</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">unique_name</span><span class="si">}</span><span class="s2">.jpg&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">label_path</span><span class="p">),</span>
+                <span class="s2">&quot;class_ids&quot;</span><span class="p">:</span> <span class="n">class_ids</span><span class="p">,</span>
+                <span class="s2">&quot;num_objects&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">yolo_lines</span><span class="p">),</span>
+            <span class="p">})</span>
+            <span class="n">deeppcb_stats</span><span class="p">[</span><span class="s2">&quot;converted&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DeepPCB conversion complete:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Converted pairs: </span><span class="si">{</span><span class="n">deeppcb_stats</span><span class="p">[</span><span class="s1">&#39;converted&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Missing pairs: </span><span class="si">{</span><span class="n">deeppcb_stats</span><span class="p">[</span><span class="s1">&#39;missing_pair&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  No defects: </span><span class="si">{</span><span class="n">deeppcb_stats</span><span class="p">[</span><span class="s1">&#39;no_defects&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Unknown class: </span><span class="si">{</span><span class="n">deeppcb_stats</span><span class="p">[</span><span class="s1">&#39;unknown_class&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DeepPCB PCBData directory not found — skipping conversion&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DeepPCB conversion complete:
+  Converted pairs: 1500
+  Missing pairs: 0
+  No defects: 0
+  Unknown class: 1501
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="train-val-test-split-70-15-15">
+<h2>5. Train / Val / Test Split (70/15/15)<a class="headerlink" href="#train-val-test-split-70-15-15" title="Link to this heading">#</a></h2>
+<p>We split the <strong>Kaggle PCB Defects dataset only</strong> into train/val/test with stratification by defect class. DeepPCB is held out entirely for template matching evaluation.</p>
+<p>The split creates the YOLO directory structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data/pcb-yolo/
+├── images/
+│   ├── train/
+│   ├── val/
+│   └── test/
+├── labels/
+│   ├── train/
+│   ├── val/
+│   └── test/
+└── dataset.yaml
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create 70/15/15 stratified train/val/test split</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_records</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="c1"># Use primary_class (folder-level class) for stratification</span>
+    <span class="c1"># First split: 70% train, 30% temp</span>
+    <span class="n">train_df</span><span class="p">,</span> <span class="n">temp_df</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.30</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;primary_class&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="c1"># Second split: 50/50 of the 30% → 15% val, 15% test</span>
+    <span class="n">val_df</span><span class="p">,</span> <span class="n">test_df</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+        <span class="n">temp_df</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">temp_df</span><span class="p">[</span><span class="s2">&quot;primary_class&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Split results:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Train: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> images (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_df</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Val:   </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">val_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> images (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">val_df</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Test:  </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test_df</span><span class="p">)</span><span class="si">}</span><span class="s2"> images (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test_df</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Total: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> images&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Verify stratification</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Class distribution per split:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">split_name</span><span class="p">,</span> <span class="n">split_df</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;Train&quot;</span><span class="p">,</span> <span class="n">train_df</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Val&quot;</span><span class="p">,</span> <span class="n">val_df</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">,</span> <span class="n">test_df</span><span class="p">)]:</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">split_df</span><span class="p">[</span><span class="s2">&quot;primary_class&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No records — run conversion cells first&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Split results:
+  Train: 485 images (70.0%)
+  Val:   104 images (15.0%)
+  Test:  104 images (15.0%)
+  Total: 693 images
+
+Class distribution per split:
+  Train: {&#39;missing_hole&#39;: np.int64(81), &#39;mouse_bite&#39;: np.int64(81), &#39;open_circuit&#39;: np.int64(81), &#39;short&#39;: np.int64(81), &#39;spur&#39;: np.int64(80), &#39;spurious_copper&#39;: np.int64(81)}
+  Val: {&#39;missing_hole&#39;: np.int64(17), &#39;mouse_bite&#39;: np.int64(17), &#39;open_circuit&#39;: np.int64(17), &#39;short&#39;: np.int64(18), &#39;spur&#39;: np.int64(17), &#39;spurious_copper&#39;: np.int64(18)}
+  Test: {&#39;missing_hole&#39;: np.int64(17), &#39;mouse_bite&#39;: np.int64(17), &#39;open_circuit&#39;: np.int64(18), &#39;short&#39;: np.int64(17), &#39;spur&#39;: np.int64(18), &#39;spurious_copper&#39;: np.int64(17)}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Organize files into train/val/test directories and create dataset.yaml</span>
+
+<span class="n">splits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">train_df</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="n">val_df</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">test_df</span><span class="p">}</span>
+
+<span class="k">for</span> <span class="n">split_name</span><span class="p">,</span> <span class="n">split_df</span> <span class="ow">in</span> <span class="n">splits</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">img_dir</span> <span class="o">=</span> <span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="n">split_name</span>
+    <span class="n">lbl_dir</span> <span class="o">=</span> <span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;labels&quot;</span> <span class="o">/</span> <span class="n">split_name</span>
+    <span class="n">img_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">lbl_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">split_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">src_img</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">])</span>
+        <span class="n">src_lbl</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>
+        
+        <span class="n">dst_img</span> <span class="o">=</span> <span class="n">img_dir</span> <span class="o">/</span> <span class="n">src_img</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">dst_lbl</span> <span class="o">=</span> <span class="n">lbl_dir</span> <span class="o">/</span> <span class="n">src_lbl</span><span class="o">.</span><span class="n">name</span>
+        
+        <span class="c1"># Copy to split directory</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">src_img</span><span class="p">,</span> <span class="n">dst_img</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">src_lbl</span><span class="p">,</span> <span class="n">dst_lbl</span><span class="p">)</span>
+        
+        <span class="c1"># Update all_records paths to point to split location</span>
+        <span class="n">all_records</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst_img</span><span class="p">)</span>
+        <span class="n">all_records</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dst_lbl</span><span class="p">)</span>
+
+<span class="c1"># Clean up the flat &quot;all&quot; directory</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;labels&quot;</span> <span class="o">/</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Create dataset.yaml for YOLO training</span>
+<span class="n">dataset_yaml</span> <span class="o">=</span> <span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;dataset.yaml&quot;</span>
+<span class="n">yaml_content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;# PCB Defect Detection Dataset</span>
+<span class="s2"># Auto-generated by Notebook 01</span>
+
+<span class="s2">path: </span><span class="si">{</span><span class="n">YOLO_DIR</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span>
+<span class="s2">train: images/train</span>
+<span class="s2">val: images/val</span>
+<span class="s2">test: images/test</span>
+
+<span class="s2"># Number of classes</span>
+<span class="s2">nc: 6</span>
+
+<span class="s2"># Class names (canonical alphabetical order)</span>
+<span class="s2">names:</span>
+<span class="s2">  0: missing_hole</span>
+<span class="s2">  1: mouse_bite</span>
+<span class="s2">  2: open_circuit</span>
+<span class="s2">  3: short</span>
+<span class="s2">  4: spur</span>
+<span class="s2">  5: spurious_copper</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dataset_yaml</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">yaml_content</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ Dataset organized into train/val/test splits&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ dataset.yaml written to </span><span class="si">{</span><span class="n">dataset_yaml</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Verify file counts</span>
+<span class="k">for</span> <span class="n">split_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]:</span>
+    <span class="n">n_imgs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">((</span><span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="n">split_name</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)))</span>
+    <span class="n">n_lbls</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">((</span><span class="n">YOLO_DIR</span> <span class="o">/</span> <span class="s2">&quot;labels&quot;</span> <span class="o">/</span> <span class="n">split_name</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.txt&quot;</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">n_imgs</span><span class="si">}</span><span class="s2"> images, </span><span class="si">{</span><span class="n">n_lbls</span><span class="si">}</span><span class="s2"> labels&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>✓ Dataset organized into train/val/test splits
+✓ dataset.yaml written to /Users/mattmiller/Documents/Northwestern/Computer Vision/Notebooks/Final Project/data/pcb-yolo/dataset.yaml
+  train: 485 images, 485 labels
+  val: 104 images, 104 labels
+  test: 104 images, 104 labels
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="exploratory-data-analysis">
+<h2>6. Exploratory Data Analysis<a class="headerlink" href="#exploratory-data-analysis" title="Link to this heading">#</a></h2>
+<p>Now we examine the dataset to understand class distributions, image characteristics, and annotation patterns. These insights inform preprocessing and augmentation decisions in Notebook 02.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6a. Class distribution bar chart</span>
+<span class="n">all_class_ids</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">all_records</span><span class="p">:</span>
+    <span class="n">all_class_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;class_ids&quot;</span><span class="p">])</span>
+
+<span class="n">class_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">all_class_ids</span><span class="p">)</span>
+<span class="n">class_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">CLASS_NAMES</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+<span class="n">class_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">class_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">bars</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">class_labels</span><span class="p">,</span> <span class="n">class_values</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Set2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Defect Class&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Number of Annotations&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Class Distribution — Kaggle PCB Defects (All Annotations)&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">bar</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bars</span><span class="p">,</span> <span class="n">class_values</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">bar</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">bar</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">),</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Report imbalance</span>
+<span class="n">max_count</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">class_values</span><span class="p">)</span>
+<span class="n">min_count</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">class_values</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Imbalance ratio (max/min): </span><span class="si">{</span><span class="n">max_count</span><span class="o">/</span><span class="n">min_count</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/2a36d992745dadf939d2244de4e7f5196e95ecec1ec2cf9e9a9cfc989984a6f8.png" src="../_images/2a36d992745dadf939d2244de4e7f5196e95ecec1ec2cf9e9a9cfc989984a6f8.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Imbalance ratio (max/min): 1.04x
+</pre></div>
+</div>
+</div>
+</div>
+<section id="observations-class-distribution">
+<h3>Observations — Class Distribution<a class="headerlink" href="#observations-class-distribution" title="Link to this heading">#</a></h3>
+<p>The bar chart above reveals the annotation distribution across the 6 defect classes. Key insights:</p>
+<ul class="simple">
+<li><p><strong>Relative balance</strong>: The Kaggle PCB Defects dataset is relatively well-balanced across classes, with an imbalance ratio shown above. This is favorable for training — severe class imbalance would bias the model toward majority classes.</p></li>
+<li><p><strong>Annotation counts vs image counts</strong>: Some images contain multiple defect annotations. The per-class annotation counts reflect the total bounding boxes, not unique images.</p></li>
+<li><p><strong>Implications for training</strong>: Because the dataset is reasonably balanced, we do not need aggressive oversampling or class-weighted loss terms. Standard YOLOv8 augmentation (Notebook 02) should suffice. Classes with fewer annotations may still show lower per-class AP — we will verify this in Notebook 03.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6b. Sample images per class with bounding box overlays</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flat</span>
+
+<span class="k">for</span> <span class="n">cls_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">cls_id</span><span class="p">]</span>
+    <span class="n">cls_name</span> <span class="o">=</span> <span class="n">CLASS_NAMES</span><span class="p">[</span><span class="n">cls_id</span><span class="p">]</span>
+    
+    <span class="c1"># Find a sample image containing this class</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">all_records</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cls_id</span> <span class="ow">in</span> <span class="n">rec</span><span class="p">[</span><span class="s2">&quot;class_ids&quot;</span><span class="p">]:</span>
+            <span class="n">sample</span> <span class="o">=</span> <span class="n">rec</span>
+            <span class="k">break</span>
+    
+    <span class="k">if</span> <span class="n">sample</span><span class="p">:</span>
+        <span class="n">visualize_yolo_annotation</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span> <span class="n">CLASS_NAMES</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class: </span><span class="si">{</span><span class="n">cls_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No sample</span><span class="se">\n</span><span class="s2">for </span><span class="si">{</span><span class="n">cls_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Sample Image per Defect Class with Bounding Box Overlays&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/3072d0697c7c3b200ad14fb9c388c4d6bed77c91f47e137e743e22e093f70117.png" src="../_images/3072d0697c7c3b200ad14fb9c388c4d6bed77c91f47e137e743e22e093f70117.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6c. Image dimension distribution</span>
+<span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">heights</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">all_records</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">])</span> <span class="k">as</span> <span class="n">img</span><span class="p">:</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Width (px)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image Width Distribution&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">heights</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;coral&quot;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Height (px)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Image Height Distribution&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">widths</span><span class="p">,</span> <span class="n">heights</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;purple&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Width (px)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Height (px)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Width vs Height&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Image Dimension Analysis&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Width  — min: </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span><span class="si">}</span><span class="s2">, max: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span><span class="si">}</span><span class="s2">, mean: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Height — min: </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span><span class="si">}</span><span class="s2">, max: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span><span class="si">}</span><span class="s2">, mean: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/8cdcdcd7c5e94e377d4314543c7e545761bb6007f112f5bbca3c26c1837abfba.png" src="../_images/8cdcdcd7c5e94e377d4314543c7e545761bb6007f112f5bbca3c26c1837abfba.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Width  — min: 2240, max: 3056, mean: 2778
+Height — min: 1586, max: 2530, mean: 2138
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="observations-image-dimensions-annotation-density">
+<h3>Observations — Image Dimensions &amp; Annotation Density<a class="headerlink" href="#observations-image-dimensions-annotation-density" title="Link to this heading">#</a></h3>
+<p><strong>Image dimensions:</strong> The histograms show the distribution of image widths and heights in the dataset. Understanding image sizes is important because:</p>
+<ul class="simple">
+<li><p><strong>Resize impact</strong>: YOLOv8 resizes all inputs to 640×640. Images much larger than this lose detail during downscaling, while smaller images gain no benefit from upscaling. The scatter plot shows whether images are uniform in size or vary significantly.</p></li>
+<li><p><strong>Aspect ratio</strong>: The width vs. height scatter reveals whether images are consistently square or rectangular. Non-square images require letterbox padding during resize, which introduces gray border regions.</p></li>
+</ul>
+<p><strong>Defects per image:</strong> The histogram above shows that most images contain a small number of defect annotations. Images with many defects are harder for detection models — overlapping or adjacent bounding boxes can cause NMS (non-maximum suppression) to incorrectly merge detections. This distribution helps us anticipate where the model might struggle.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6d. Annotation density — defects per image</span>
+<span class="n">defects_per_image</span> <span class="o">=</span> <span class="p">[</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;num_objects&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">all_records</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;teal&quot;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Number of Defects per Image&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Number of Images&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Defects per Image Distribution&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Defects per image — min: </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span><span class="si">}</span><span class="s2">, max: </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;mean: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, median: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/e61cc5cdc01538ac8836b9a5d0c20e2de89785a71dba5624ead5b5ab15d871c9.png" src="../_images/e61cc5cdc01538ac8836b9a5d0c20e2de89785a71dba5624ead5b5ab15d871c9.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Defects per image — min: 1, max: 6, mean: 4.26, median: 5
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="summary-statistics">
+<h2>7. Summary Statistics<a class="headerlink" href="#summary-statistics" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Summary statistics table</span>
+<span class="n">summary_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Metric&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;Total images (Kaggle)&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Total annotations&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Unique defect classes&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Train images&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Val images&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Test images&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Avg defects per image&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Max defects per image&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Avg image width (px)&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Avg image height (px)&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DeepPCB pairs (template matching)&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;Value&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">all_records</span><span class="p">),</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">&quot;num_objects&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">all_records</span><span class="p">),</span>
+        <span class="mi">6</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">train_df</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">val_df</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">test_df</span><span class="p">),</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">max</span><span class="p">(</span><span class="n">defects_per_image</span><span class="p">),</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">heights</span><span class="p">)</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">deeppcb_records</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">summary_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">summary_data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">summary_df</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+<span class="c1"># Also show per-class breakdown</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Per-Class Annotation Counts:&quot;</span><span class="p">)</span>
+<span class="n">class_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">&quot;Class&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">CLASS_NAMES</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)],</span>
+    <span class="s2">&quot;Annotations&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">class_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)],</span>
+    <span class="s2">&quot;</span><span class="si">% o</span><span class="s2">f Total&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">class_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">sum</span><span class="p">(</span><span class="n">class_counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)],</span>
+<span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">class_summary</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                           Metric Value
+            Total images (Kaggle)   693
+                Total annotations  2953
+            Unique defect classes     6
+                     Train images   485
+                       Val images   104
+                      Test images   104
+            Avg defects per image  4.26
+            Max defects per image     6
+             Avg image width (px)  2778
+            Avg image height (px)  2138
+DeepPCB pairs (template matching)  1500
+
+
+Per-Class Annotation Counts:
+          Class  Annotations % of Total
+   missing_hole          497      16.8%
+     mouse_bite          492      16.7%
+   open_circuit          482      16.3%
+          short          491      16.6%
+           spur          488      16.5%
+spurious_copper          503      17.0%
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./notebooks"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../intro.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">PCB Defect Detection Pipeline</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="02-preprocessing-and-augmentation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Notebook 02: Preprocessing &amp; Augmentation</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#download-kaggle-pcb-defects-dataset">1. Download Kaggle PCB Defects Dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#download-deeppcb-dataset">2. Download DeepPCB Dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pascal-voc-xml-yolo-txt-conversion-kaggle-dataset">3. Pascal VOC XML → YOLO TXT Conversion (Kaggle Dataset)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deeppcb-custom-txt-yolo-txt-conversion">4. DeepPCB Custom TXT → YOLO TXT Conversion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-val-test-split-70-15-15">5. Train / Val / Test Split (70/15/15)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exploratory-data-analysis">6. Exploratory Data Analysis</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observations-class-distribution">Observations — Class Distribution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#observations-image-dimensions-annotation-density">Observations — Image Dimensions &amp; Annotation Density</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-statistics">7. Summary Statistics</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Matt Miller
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
