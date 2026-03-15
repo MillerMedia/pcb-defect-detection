@@ -16,7 +16,7 @@ exclude_patterns:
   - models/**
 
 repository:
-  url: ""
+  url: "https://github.com/MillerMedia/pcb-defect-detection"
 
 html:
   use_issues_button: false
