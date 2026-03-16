@@ -513,7 +513,7 @@
 <h2>4. Batch Inference Demo<a class="headerlink" href="#batch-inference-demo" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Batch inference on multiple test images (reuses predict_and_visualize logic)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Batch inference on multiple test images</span>
 <span class="n">batch_imgs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">test_img_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.jpg&quot;</span><span class="p">))</span> <span class="o">+</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">test_img_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.png&quot;</span><span class="p">))</span>
 <span class="n">batch_imgs</span> <span class="o">=</span> <span class="n">batch_imgs</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span>
 
@@ -532,13 +532,19 @@
 
                 <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+                <span class="n">detected_classes</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">pred</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;predictions&quot;</span><span class="p">]:</span>
                     <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span>
                     <span class="n">color</span> <span class="o">=</span> <span class="n">CLASS_COLORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">],</span> <span class="s2">&quot;white&quot;</span><span class="p">)</span>
                     <span class="n">rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">x2</span><span class="o">-</span><span class="n">x1</span><span class="p">,</span> <span class="n">y2</span><span class="o">-</span><span class="n">y1</span><span class="p">,</span>
                                              <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>
                     <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;predictions&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> det, </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;inference_time_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+                    <span class="n">detected_classes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">])</span>
+
+                <span class="c1"># Show detected defect types in title</span>
+                <span class="n">class_summary</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">detected_classes</span><span class="p">)))</span> <span class="k">if</span> <span class="n">detected_classes</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;predictions&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> det: </span><span class="si">{</span><span class="n">class_summary</span><span class="si">}</span><span class="se">\n</span><span class="s2">(</span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;inference_time_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">ms)&quot;</span><span class="p">,</span>
+                            <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">ConnectionError</span><span class="p">:</span>
@@ -548,17 +554,11 @@
     <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Batch Inference Results&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">inference_times</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Avg inference time: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">inference_times</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Min/Max: </span><span class="si">{</span><span class="nb">min</span><span class="p">(</span><span class="n">inference_times</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">inference_times</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/8498ae7c22e03989676992724570618afa2aece56c4e8c5194dea4ff36222298.png" src="../_images/8498ae7c22e03989676992724570618afa2aece56c4e8c5194dea4ff36222298.png" />
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Avg inference time: 20.4 ms
-Min/Max: 16.2 / 22.5 ms
 </pre></div>
 </div>
 </div>

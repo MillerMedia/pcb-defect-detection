@@ -362,7 +362,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Epochs</p></td>
-<td><p>100 (patience=10)</p></td>
+<td><p>70 (early stopped at 60)</p></td>
 <td><p>30</p></td>
 </tr>
 <tr class="row-odd"><td><p>Optimizer</p></td>
@@ -375,7 +375,7 @@
 </tr>
 <tr class="row-odd"><td><p>Input size</p></td>
 <td><p>640×640</p></td>
-<td><p>224×224 (cropped ROIs)</p></td>
+<td><p>224×224 (GT crops)</p></td>
 </tr>
 <tr class="row-even"><td><p>Batch size</p></td>
 <td><p>16</p></td>
@@ -395,7 +395,6 @@
 </section>
 <section id="results-and-evaluation">
 <h2>Results and Evaluation<a class="headerlink" href="#results-and-evaluation" title="Link to this heading">#</a></h2>
-<p><strong>Template matching baseline</strong> evaluated on 1,500 DeepPCB pairs (IoU≥0.5): Precision=0.0023, Recall=0.0116, F1=0.0038. The near-zero precision reflects catastrophic false positive rates from alignment artifacts and lighting variation in pixel differencing. This establishes clear motivation for learned representations.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Approach</p></th>
@@ -407,47 +406,50 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Template Matching</p></td>
+<tr class="row-even"><td><p>Template Matching (DeepPCB)</p></td>
 <td><p>N/A</p></td>
 <td><p>0.002</p></td>
 <td><p>0.012</p></td>
 <td><p>0.004</p></td>
 <td><p>—</p></td>
 </tr>
-<tr class="row-odd"><td><p>YOLOv8</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
+<tr class="row-odd"><td><p>YOLOv8 (detection)</p></td>
+<td><p><strong>0.804</strong></p></td>
+<td><p><strong>0.821</strong></p></td>
+<td><p><strong>0.747</strong></p></td>
+<td><p><strong>0.782</strong></p></td>
+<td><p>35.0</p></td>
 </tr>
-<tr class="row-even"><td><p>ResNet (classification)</p></td>
+<tr class="row-even"><td><p>ResNet-18 (GT crops)</p></td>
 <td><p>N/A</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
+<td><p>1.000</p></td>
+<td><p>1.000</p></td>
+<td><p>1.000</p></td>
+<td><p>—</p></td>
 </tr>
 <tr class="row-odd"><td><p>YOLOv8+ResNet (two-stage)</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
-<td><p>[PENDING]</p></td>
+<td><p>0.804</p></td>
+<td><p>0.821</p></td>
+<td><p>0.747</p></td>
+<td><p>0.782</p></td>
+<td><p>~79</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>[PENDING: Per-class analysis, confusion matrix discussion, two-stage agreement analysis, ONNX optimization benchmarks (PyTorch vs ONNX vs INT8 — size, latency, quality gates ≤2% mAP drop, ≤1% recall drop).]</p>
+<p><strong>Template matching</strong> achieved near-zero metrics (F1=0.004) due to catastrophic false positive rates from alignment artifacts and lighting variation, establishing clear motivation for learned representations.</p>
+<p><strong>YOLOv8</strong> achieved mAP&#64;0.5=0.804 on the test set with strong per-class variation: missing_hole (0.962 AP) was near-perfect while spur (0.660) and mouse_bite (0.672) proved hardest — these are small, subtle defects that also challenge human inspectors. Early stopping triggered at epoch 70 (best model at epoch 60), confirming convergence without overfitting.</p>
+<p><strong>ResNet-18</strong> achieved 100% classification accuracy on ground-truth crops, but this reflects perfect localization input. The <strong>two-stage pipeline</strong> (YOLOv8→ResNet) showed 98.1% class agreement across 426 detections, adding ~44ms latency with negligible accuracy gain — single-pass YOLOv8 is recommended for production.</p>
+<p><strong>ONNX optimization</strong> exported the model for runtime-agnostic deployment. INT8 quantization compressed the model from 12.0MB to 3.5MB (3.5× reduction) with quality gates passing: mAP drop of 0.48% (threshold ≤2%) and recall actually improved by 1.1%. Inference: PyTorch 35ms → ONNX FP32 28ms (19% faster) → INT8 31ms.</p>
 </section>
 <section id="challenges-and-solutions">
 <h2>Challenges and Solutions<a class="headerlink" href="#challenges-and-solutions" title="Link to this heading">#</a></h2>
 <p><strong>Format heterogeneity.</strong> Kaggle (Pascal VOC XML) and DeepPCB (custom TXT with different class IDs) required dedicated converters to a canonical YOLO format with unified alphabetical class ordering, validated by visual spot-checks.</p>
 <p><strong>Resolution scaling.</strong> Source images (2778×2138) resized to 640×640 risk losing small defects. Letterbox padding preserves aspect ratio; multi-scale augmentation and the FPN neck partially mitigate detail loss.</p>
-<p><strong>Template matching limitations.</strong> Classical differencing fundamentally cannot discriminate defect types and requires per-design reference templates. Alignment failures on uniform PCB regions produce systematic false positives, confirming that learned features are essential for production-grade inspection.</p>
-<p>[PENDING: Model-specific challenges from training — convergence behavior, class-specific failure modes, ONNX export considerations.]</p>
+<p><strong>Class-specific difficulty.</strong> Spur (AP=0.660) and mouse_bite (AP=0.672) defects are visually subtle and small, often missed or confused with background. Improvement paths include upgrading to YOLOv8s/m, collecting more training data for weak classes, and lowering the confidence threshold to favor recall over precision given the 10× cost asymmetry of missed defects.</p>
+<p><strong>Single board design.</strong> All training images derive from one PCB layout with synthetic defects. Production deployment requires per-board fine-tuning, though transfer learning from this model would reduce data requirements to ~100-200 labeled images per new design.</p>
 <hr class="docutils" />
-<p><em>Code repository and Jupyter Book: [GitHub URL]</em></p>
+<p><em>Code repository: <a class="reference external" href="https://github.com/MillerMedia/pcb-defect-detection">github.com/MillerMedia/pcb-defect-detection</a> | Jupyter Book: <a class="reference external" href="https://millermedia.github.io/pcb-defect-detection">millermedia.github.io/pcb-defect-detection</a></em></p>
 </section>
 </section>
 
