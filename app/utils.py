@@ -22,18 +22,19 @@ def load_model(model_path=None):
     """Load inference model (ONNX or PyTorch).
 
     Fallback chain: ONNX → PyTorch .pt
+    Both use the Ultralytics YOLO wrapper for consistent pre/post processing.
     """
     if model_path is None:
         model_path = os.environ.get("MODEL_PATH", "models/yolov8_best.onnx")
 
     model_path = Path(model_path)
 
-    if model_path.suffix == ".onnx" and model_path.exists():
-        import onnxruntime as ort
-        session = ort.InferenceSession(str(model_path))
-        return {"type": "onnx", "session": session, "path": str(model_path)}
+    if model_path.exists() and model_path.suffix in (".onnx", ".pt"):
+        from ultralytics import YOLO
+        model = YOLO(str(model_path), task="detect")
+        return {"type": "ultralytics", "model": model, "path": str(model_path)}
 
-    # Fallback to PyTorch
+    # Fallback to PyTorch if ONNX path given but not found
     pt_path = model_path.with_suffix(".pt")
     if not pt_path.exists():
         pt_path = Path("models/yolov8_best.pt")
