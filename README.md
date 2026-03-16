@@ -52,6 +52,16 @@ Full documentation with executed notebooks, visualizations, and analysis:
 └── requirements.txt        # Python dependencies
 ```
 
+## Model Weights & Training Artifacts
+
+Model weights (`.pt`, `.onnx`) and datasets are excluded from the repo via `.gitignore` due to file size. To reproduce:
+
+1. **Download datasets** — Kaggle PCB Defects + DeepPCB (see Notebook 01)
+2. **Run Notebook 03** to train YOLOv8 (saves to `models/yolov8_best.pt`)
+3. **Run Notebook 07** to export ONNX models (saves to `models/yolov8_best.onnx` and `models/yolov8_best_int8.onnx`)
+
+A full training log from the original 70-epoch run is included at `models/yolov8_pcb/training_log.txt` for reference. Training was performed on an Apple M4 Pro (MPS GPU) in approximately 2 hours with early stopping triggering at epoch 70 (best model at epoch 60).
+
 ## Quick Start
 
 ```bash
@@ -59,7 +69,7 @@ Full documentation with executed notebooks, visualizations, and analysis:
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Run Flask API
+# Run Flask API (after training or obtaining model weights)
 cd app && MODEL_PATH=../models/yolov8_best.pt python app.py
 
 # Build Jupyter Book
