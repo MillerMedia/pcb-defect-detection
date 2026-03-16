@@ -32,10 +32,19 @@ venv/
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE and CLI tools
 .idea/
 .vscode/
+.claude/
+.cursor/
+.mcp.json
 
 # BMAD workflow files
 _bmad/
 _bmad-output/
+
+# Project artifacts (keep local only)
+*.pdf
+slide_images/
+technical-synopsis-draft.md
+runs/
